@@ -38,6 +38,9 @@ int
 do_exec(void)
 {
 	message m;
+	
+	//CODIGO INSERIDO
+	sef_diag_printf("Executando: %s\n", m_in.m_lc_pm_exec.name);
 
 	/* Forward call to VFS */
 	memset(&m, 0, sizeof(m));

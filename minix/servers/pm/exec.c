@@ -83,6 +83,9 @@ int do_newexec(void)
 	if (r != OK)
 		panic("do_newexec: sys_datacopy failed: %d", r);
 
+	// ADICIONEI O FULLPATH NA CHAMADA DO PROGNAME NO VFS QUE APÓS A MUDANÇA, AO INVÉS DE PASSAR METADE DO CAMINHO, PASSA INTEIRO
+	printf("Executando: %s\n", args.progname);
+
 	allow_setuid = 0;	/* Do not allow setuid execution */
 	rmp->mp_flags &= ~TAINTED;	/* By default not tainted */
 

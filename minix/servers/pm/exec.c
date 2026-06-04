@@ -26,6 +26,7 @@
 #include <signal.h>
 #include <libexec.h>
 #include <sys/ptrace.h>
+#include <sys/syslimits.h>
 #include "mproc.h"
 
 #define ESCRIPT	(-2000)	/* Returned by read_header for a #! script. */
@@ -38,8 +39,25 @@ int
 do_exec(void)
 {
 	message m;
+	static char path[PATH_MAX]; /* Buffer para guardar o caminho */
+	int r;
 
-	/* Forward call to VFS */
+	/*MODIFICACAO*/
+
+	r = sys_datacopy(mp->mp_endpoint,
+			 (vir_bytes)m_in.m_lc_pm_exec.name,
+			 SELF, 	
+			 (vir_bytes)path,
+			 m_in.m_lc_pm_exec.namelen);
+
+	
+	if (r == OK) {
+		/* Garante que a string termina com um caractere nulo */
+		path[m_in.m_lc_pm_exec.namelen] = '\0';
+		printf("Executando: %s\n", path);
+	}
+
+	/* Forward call to VFS (código original da função) */
 	memset(&m, 0, sizeof(m));
 	m.m_type = VFS_PM_EXEC;
 	m.VFS_PM_ENDPT = mp->mp_endpoint;
@@ -54,8 +72,6 @@ do_exec(void)
 	/* Do not reply */
 	return SUSPEND;
 }
-
-
 /*===========================================================================*
  *				do_newexec				     *
  *===========================================================================*/
@@ -111,7 +127,7 @@ int do_newexec(void)
 	/* System will save command line for debugging, ps(1) output, etc. */
 	strncpy(rmp->mp_name, args.progname, PROC_NAME_LEN-1);
 	rmp->mp_name[PROC_NAME_LEN-1] = '\0';
-
+	
 	/* Save offset to initial argc (for procfs) */
 	rmp->mp_frame_addr = (vir_bytes) args.stack_high - args.frame_len;
 	rmp->mp_frame_len = args.frame_len;
